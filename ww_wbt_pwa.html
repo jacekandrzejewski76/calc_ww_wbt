@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalkulator WW i WBT – PWA</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --bg:#0f172a;
+  --card:#111827;
+  --muted:#94a3b8;
+  --text:#e5e7eb;
+  --accent:#22d3ee;
+  --ring:#38bdf8;
+  --ok:#4ade80;
+}
+*{box-sizing:border-box}
+body{margin:0; font-family:Inter, ui-sans-serif, system-ui; background:linear-gradient(180deg, #0b1226, var(--bg)); color:var(--text);}
+.container{max-width:980px; margin:40px auto; padding:24px}
+.grid{display:grid; gap:18px}
+@media (min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+.card{background:linear-gradient(180deg, #0b0f1a, var(--card)); border:1px solid rgba(148,163,184,.15); border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
+h1{font-size:clamp(24px,3.4vw,36px); margin:0 0 6px}
+p.lead{color:var(--muted); margin:0 0 22px}
+h2{font-size:20px; margin:0 0 14px}
+.row{display:grid; grid-template-columns:1fr 140px; gap:12px; align-items:center; margin:10px 0}
+label{color:var(--muted); font-size:14px}
+input, select{width:100%; padding:12px 14px; border-radius:12px; background:#0b1220; color:var(--text); border:1px solid rgba(148,163,184,.25); outline:none; transition:border .15s, box-shadow .15s}
+input:focus, select:focus{border-color:var(--ring); box-shadow:0 0 0 3px rgba(56,189,248,.25)}
+.result{margin-top:14px; font-size:28px; font-weight:700; background:linear-gradient(90deg, var(--accent), var(--ok)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.note{font-size:12px; color:var(--muted); margin-top:6px}
+.toolbar{display:flex; gap:10px; margin-top:16px}
+button{cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid rgba(148,163,184,.25); background:#0b1220; color:var(--text); font-weight:600}
+button.primary{background:linear-gradient(90deg, #0891b2, #22d3ee); border:none; color:#041019}
+.footer{opacity:.7; font-size:12px; text-align:center; margin-top:24px}
+.divider{height:1px; background:linear-gradient(90deg, transparent, rgba(148,163,184,.25), transparent); margin:10px 0 16px}
+.product-row{display:flex; gap:10px; margin-bottom:10px}
+.product-row input{flex:1;}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Kalkulator WW i WBT – PWA</h1>
+<p class="lead">Dodaj kilka produktów do jednego posiłku i oblicz sumaryczne WW i WBT. Można dodać na ekran główny i działa offline.</p>
+<div class="grid">
+<section class="card" id="card-ww">
+<h2>WW – Wymiennik węglowodanowy</h2>
+<div class="divider"></div>
+<div id="wwProducts"></div>
+<button class="primary" onclick="addWWProduct()">Dodaj produkt WW</button>
+<div class="result" id="wwOut">WW: 0,00</div>
+</section>
+<section class="card" id="card-wbt">
+<h2>WBT – Wymiennik białkowo‑tłuszczowy</h2>
+<div class="divider"></div>
+<div id="wbtProducts"></div>
+<button class="primary" onclick="addWBTProduct()">Dodaj produkt WBT</button>
+<div class="result" id="wbtOut">WBT: 0,00</div>
+</section>
+</div>
+<div class="footer">© 2025 – Kalkulator WW/WBT PWA, offline</div>
+</div>
+<script>
+const fmt=v=>!isFinite(v)?'0,00':v.toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2});
+function addWWProduct(){const c=document.getElementById('wwProducts');const d=document.createElement('div');d.className='product-row';d.innerHTML='<input type="number" placeholder="Węglowodany na 100 g" step="0.1" class="ww-carb"> <input type="number" placeholder="Waga porcji (g)" step="0.1" class="ww-weight"> <button onclick="removeRow(this)">Usuń</button>';c.appendChild(d);d.querySelectorAll('input').forEach(i=>i.addEventListener('input',updateWW));updateWW();}
+function addWBTProduct(){const c=document.getElementById('wbtProducts');const d=document.createElement('div');d.className='product-row';d.innerHTML='<input type="number" placeholder="Waga produktu (g)" step="0.1" class="wbt-weight"> <input type="number" placeholder="Białko w 100 g" step="0.1" class="wbt-protein"> <input type="number" placeholder="Tłuszcz w 100 g" step="0.1" class="wbt-fat"> <button onclick="removeRow(this)">Usuń</button>';c.appendChild(d);d.querySelectorAll('input').forEach(i=>i.addEventListener('input',updateWBT));updateWBT();}
+function removeRow(b){b.parentElement.remove();updateWW();updateWBT();}
+function updateWW(){let sum=0;document.querySelectorAll('.ww-carb').forEach((c,i)=>{const carbs=parseFloat(c.value)||0;const w=parseFloat(document.querySelectorAll('.ww-weight')[i].value)||0;sum+=(carbs/100)*w/10});document.getElementById('wwOut').textContent='WW: '+fmt(sum);}
+function updateWBT(){let sum=0;document.querySelectorAll('.wbt-weight').forEach((w,i)=>{const weight=parseFloat(w.value)||0;const p=parseFloat(document.querySelectorAll('.wbt-protein')[i].value)||0;const f=parseFloat(document.querySelectorAll('.wbt-fat')[i].value)||0;sum+=((p*weight/100)*4+(f*weight/100)*9)/100});document.getElementById('wbtOut').textContent='WBT: '+fmt(sum);}
+</script>
+</body>
+</html>
